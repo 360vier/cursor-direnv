@@ -7,13 +7,18 @@ import { installCommand } from "../../src/commands/install.mjs";
 import { uninstallCommand } from "../../src/commands/uninstall.mjs";
 
 const quietStdout = { write() {} };
+const direnvAvailable = () => true;
 
 const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));
 
 test("uninstall removes hook file and only its matching preToolUse entry", async () => {
   const projectDir = await mkdtemp(join(tmpdir(), "cursor-direnv-uninstall-"));
   try {
-    await installCommand({ cwd: projectDir, stdout: quietStdout });
+    await installCommand({
+      cwd: projectDir,
+      stdout: quietStdout,
+      isDirenvAvailable: direnvAvailable,
+    });
     const hooksJsonPath = join(projectDir, ".cursor", "hooks.json");
 
     const existing = await readJson(hooksJsonPath);

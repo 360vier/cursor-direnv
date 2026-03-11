@@ -1,4 +1,5 @@
 import { dirname } from "node:path";
+import { isDirenvAvailable as defaultIsDirenvAvailable } from "../lib/direnv.mjs";
 import { buildPreToolUseEntry, mergePreToolUseHook } from "../lib/hooks-json.mjs";
 import {
   copyFileAtomic,
@@ -18,7 +19,14 @@ export const installCommand = async ({
   cwd = process.cwd(),
   homeDir,
   stdout = process.stdout,
+  isDirenvAvailable = defaultIsDirenvAvailable,
 } = {}) => {
+  if (!(await isDirenvAvailable())) {
+    throw new Error(
+      "direnv is not available in PATH. Install direnv first, then run cursor-direnv install again.",
+    );
+  }
+
   const context = resolveInstallContext({ global, cwd, homeDir });
   const sourceHookPath = resolvePackagedHookSourcePath(import.meta.url);
   const targetHooksDir = dirname(context.hookScriptPath);

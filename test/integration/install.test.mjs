@@ -6,13 +6,18 @@ import { tmpdir } from "node:os";
 import { installCommand } from "../../src/commands/install.mjs";
 
 const quietStdout = { write() {} };
+const direnvAvailable = () => true;
 
 const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));
 
 test("install creates local hook script and hooks.json entry", async () => {
   const projectDir = await mkdtemp(join(tmpdir(), "cursor-direnv-install-local-"));
   try {
-    await installCommand({ cwd: projectDir, stdout: quietStdout });
+    await installCommand({
+      cwd: projectDir,
+      stdout: quietStdout,
+      isDirenvAvailable: direnvAvailable,
+    });
 
     const hookPath = join(projectDir, ".cursor", "hooks", "pretooluse-direnv.mjs");
     const hooksJsonPath = join(projectDir, ".cursor", "hooks.json");
@@ -54,8 +59,16 @@ test("install merges existing hooks.json without duplicates", async () => {
       "utf8",
     );
 
-    await installCommand({ cwd: projectDir, stdout: quietStdout });
-    await installCommand({ cwd: projectDir, stdout: quietStdout });
+    await installCommand({
+      cwd: projectDir,
+      stdout: quietStdout,
+      isDirenvAvailable: direnvAvailable,
+    });
+    await installCommand({
+      cwd: projectDir,
+      stdout: quietStdout,
+      isDirenvAvailable: direnvAvailable,
+    });
 
     const hooksJson = await readJson(hooksJsonPath);
     assert.deepEqual(hooksJson.hooks.postToolUse, [
@@ -81,6 +94,7 @@ test("install -g writes into test-controlled HOME", async () => {
       cwd: projectDir,
       homeDir: fakeHome,
       stdout: quietStdout,
+      isDirenvAvailable: direnvAvailable,
     });
 
     const hookPath = join(fakeHome, ".cursor", "hooks", "pretooluse-direnv.mjs");
@@ -97,5 +111,21 @@ test("install -g writes into test-controlled HOME", async () => {
   } finally {
     await rm(projectDir, { recursive: true, force: true });
     await rm(fakeHome, { recursive: true, force: true });
+  }
+});
+
+test("install fails with a clear error when direnv is unavailable", async () => {
+  const projectDir = await mkdtemp(join(tmpdir(), "cursor-direnv-install-no-direnv-"));
+  try {
+    await assert.rejects(
+      installCommand({
+        cwd: projectDir,
+        stdout: quietStdout,
+        isDirenvAvailable: () => false,
+      }),
+      /direnv is not available in PATH/,
+    );
+  } finally {
+    await rm(projectDir, { recursive: true, force: true });
   }
 });

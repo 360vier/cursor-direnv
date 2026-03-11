@@ -3,6 +3,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isDirenvAvailable as defaultIsDirenvAvailable } from "../lib/direnv.mjs";
 
 const NO_UPDATE = {};
 
@@ -16,7 +17,14 @@ const readStdin = async () => {
 
 const trimStart = (value) => value.replace(/^\s+/, "");
 
-export const rewritePayload = (payload, { env = process.env, cwd = process.cwd() } = {}) => {
+export const rewritePayload = (
+  payload,
+  {
+    env = process.env,
+    cwd = process.cwd(),
+    isDirenvAvailable = defaultIsDirenvAvailable,
+  } = {},
+) => {
   if (payload?.tool_name !== "Shell") {
     return NO_UPDATE;
   }
@@ -24,6 +32,10 @@ export const rewritePayload = (payload, { env = process.env, cwd = process.cwd()
   const toolInput = payload?.tool_input ?? {};
   const command = toolInput?.command;
   if (typeof command !== "string" || command.trim() === "") {
+    return NO_UPDATE;
+  }
+
+  if (!isDirenvAvailable()) {
     return NO_UPDATE;
   }
 

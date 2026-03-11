@@ -16,6 +16,8 @@ Install user-level hook into `~/.cursor`:
 npx cursor-direnv install -g
 ```
 
+`install` verifies that `direnv` is available in PATH and exits with a clear error if it is missing.
+
 Uninstall:
 
 ```bash
@@ -40,6 +42,7 @@ The hook only rewrites when all of the following are true:
 - you are not already in a direnv context (`DIRENV_DIR` / `DIRENV_DIFF`)
 - a project `.envrc` exists (`CURSOR_PROJECT_DIR` fallback to cwd)
 - command does not already begin with `direnv exec `
+- `direnv` is callable from PATH
 
 ## Idempotency and merge behavior
 
