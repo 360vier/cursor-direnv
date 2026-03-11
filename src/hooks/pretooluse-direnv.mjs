@@ -2,6 +2,9 @@
 
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const NO_UPDATE = {};
 
 const readStdin = async () => {
   const chunks = [];
@@ -12,6 +15,43 @@ const readStdin = async () => {
 };
 
 const trimStart = (value) => value.replace(/^\s+/, "");
+
+export const rewritePayload = (payload, { env = process.env, cwd = process.cwd() } = {}) => {
+  if (payload?.tool_name !== "Shell") {
+    return NO_UPDATE;
+  }
+
+  const toolInput = payload?.tool_input ?? {};
+  const command = toolInput?.command;
+  if (typeof command !== "string" || command.trim() === "") {
+    return NO_UPDATE;
+  }
+
+  // If already inside a direnv context, do not wrap again.
+  if (env.DIRENV_DIR || env.DIRENV_DIFF) {
+    return NO_UPDATE;
+  }
+
+  const projectDir = env.CURSOR_PROJECT_DIR || cwd;
+  const envrcPath = resolve(projectDir, ".envrc");
+  if (!existsSync(envrcPath)) {
+    return NO_UPDATE;
+  }
+
+  const trimmed = trimStart(command);
+  if (trimmed.startsWith("direnv exec ")) {
+    return NO_UPDATE;
+  }
+
+  const wrappedCommand = `direnv exec . zsh -lc ${JSON.stringify(command)}`;
+  return {
+    permission: "allow",
+    updated_input: {
+      ...toolInput,
+      command: wrappedCommand,
+    },
+  };
+};
 
 const main = async () => {
   let payloadText = "";
@@ -35,49 +75,18 @@ const main = async () => {
     return;
   }
 
-  if (payload?.tool_name !== "Shell") {
-    process.stdout.write("{}\n");
-    return;
-  }
-
-  const toolInput = payload?.tool_input ?? {};
-  const command = toolInput?.command;
-  if (typeof command !== "string" || command.trim() === "") {
-    process.stdout.write("{}\n");
-    return;
-  }
-
-  // If already inside a direnv context, do not wrap again.
-  if (process.env.DIRENV_DIR || process.env.DIRENV_DIFF) {
-    process.stdout.write("{}\n");
-    return;
-  }
-
-  const projectDir = process.env.CURSOR_PROJECT_DIR || process.cwd();
-  const envrcPath = resolve(projectDir, ".envrc");
-  if (!existsSync(envrcPath)) {
-    process.stdout.write("{}\n");
-    return;
-  }
-
-  const trimmed = trimStart(command);
-  if (trimmed.startsWith("direnv exec ")) {
-    process.stdout.write("{}\n");
-    return;
-  }
-
-  const wrappedCommand = `direnv exec . zsh -lc ${JSON.stringify(command)}`;
-  const output = {
-    permission: "allow",
-    updated_input: {
-      ...toolInput,
-      command: wrappedCommand,
-    },
-  };
-
-  process.stdout.write(`${JSON.stringify(output)}\n`);
+  process.stdout.write(`${JSON.stringify(rewritePayload(payload))}\n`);
 };
 
-main().catch(() => {
-  process.stdout.write("{}\n");
-});
+const isDirectExecution = () => {
+  if (!process.argv[1]) {
+    return false;
+  }
+  return resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+};
+
+if (isDirectExecution()) {
+  main().catch(() => {
+    process.stdout.write("{}\n");
+  });
+}

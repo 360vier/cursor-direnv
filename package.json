@@ -1,0 +1,40 @@
+{
+  "name": "cursor-direnv",
+  "version": "0.1.0",
+  "description": "Install Cursor hooks that run Shell commands through direnv.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "cursor-direnv": "./bin/cursor-direnv.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "node --check bin/cursor-direnv.mjs src/hooks/pretooluse-direnv.mjs src/commands/install.mjs src/commands/uninstall.mjs src/lib/hooks-json.mjs src/lib/io.mjs src/lib/paths.mjs test/unit/hooks-json.test.mjs test/unit/pretooluse-direnv.test.mjs test/integration/install.test.mjs test/integration/uninstall.test.mjs",
+    "test": "node --test",
+    "ci": "npm run lint && npm run test && npm pack --dry-run",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "cursor",
+    "direnv",
+    "hooks",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thorsten/cursor-direnv.git"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.30.0"
+  }
+}
