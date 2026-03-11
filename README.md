@@ -18,6 +18,9 @@ npx cursor-direnv install -g
 
 `install` verifies that `direnv` is available in PATH and exits with a clear error if it is missing.
 
+Local install also creates `.cursor/rules/direnv-hook.mdc` when missing.
+Global install prints rule text for manual copy/paste into Cursor User Rules.
+
 Uninstall:
 
 ```bash
@@ -49,6 +52,7 @@ The hook only rewrites when all of the following are true:
 - `install` always preserves unrelated `hooks.json` keys and hook arrays.
 - It only adds the exact `preToolUse` entry if it is missing.
 - Running `install` repeatedly does not create duplicates.
+- Existing `.cursor/rules/direnv-hook.mdc` is left unchanged.
 
 ## Troubleshooting
 

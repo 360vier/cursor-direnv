@@ -14,7 +14,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "lint": "node --check bin/cursor-direnv.mjs src/hooks/pretooluse-direnv.mjs src/commands/install.mjs src/commands/uninstall.mjs src/lib/direnv.mjs src/lib/hooks-json.mjs src/lib/io.mjs src/lib/paths.mjs test/unit/hooks-json.test.mjs test/unit/pretooluse-direnv.test.mjs test/integration/install.test.mjs test/integration/uninstall.test.mjs",
+    "lint": "node --check bin/cursor-direnv.mjs src/hooks/pretooluse-direnv.mjs src/commands/install.mjs src/commands/uninstall.mjs src/lib/direnv.mjs src/lib/hooks-json.mjs src/lib/io.mjs src/lib/paths.mjs src/lib/rules.mjs test/unit/hooks-json.test.mjs test/unit/pretooluse-direnv.test.mjs test/integration/install.test.mjs test/integration/uninstall.test.mjs",
     "test": "node --test",
     "ci": "npm run lint && npm run test && npm pack --dry-run",
     "changeset": "changeset",

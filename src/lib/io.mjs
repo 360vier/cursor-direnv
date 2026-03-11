@@ -37,6 +37,13 @@ export const writeJsonAtomic = async (path, value) => {
   await rename(tempPath, path);
 };
 
+export const writeTextAtomic = async (path, content) => {
+  await ensureDir(dirname(path));
+  const tempPath = `${path}.${process.pid}.tmp`;
+  await writeFile(tempPath, content, "utf8");
+  await rename(tempPath, path);
+};
+
 export const copyFileAtomic = async (sourcePath, destinationPath) => {
   await ensureDir(dirname(destinationPath));
   const tempPath = `${destinationPath}.${process.pid}.tmp`;

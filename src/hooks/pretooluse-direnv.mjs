@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 
 import { existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isDirenvAvailable as defaultIsDirenvAvailable } from "../lib/direnv.mjs";
 
 const NO_UPDATE = {};
+
+const defaultIsDirenvAvailable = () => {
+  const result = spawnSync("direnv", ["version"], { stdio: "ignore" });
+  if (result.error) {
+    return false;
+  }
+  return result.status === 0;
+};
 
 const readStdin = async () => {
   const chunks = [];
