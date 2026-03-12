@@ -73,6 +73,9 @@ npm run ci
 - Create a release note in your PR with `npm run changeset`.
 - Changesets automation opens/updates a `chore: version packages` PR on `main`.
 - Merging that PR updates `package.json` + changelog and publishes to npm.
+- Publishing uses npm trusted publishing (OIDC), not `NPM_TOKEN`.
+- Configure npm package settings with trusted publisher workflow filename `release.yml`.
+- Keep GitHub Actions permissions set to read/write and allow workflows to create pull requests.
 
 ## License
 
