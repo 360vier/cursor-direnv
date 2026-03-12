@@ -31,7 +31,9 @@ test("uninstall removes hook file and only its matching preToolUse entry", async
     assert.deepEqual(updated.hooks.preToolUse, [{ matcher: "Shell", command: "echo keep" }]);
 
     const hookPath = join(projectDir, ".cursor", "hooks", "pretooluse-direnv.mjs");
+    const rulePath = join(projectDir, ".cursor", "rules", "direnv-hook.mdc");
     await assert.rejects(readFile(hookPath, "utf8"), { code: "ENOENT" });
+    await assert.rejects(readFile(rulePath, "utf8"), { code: "ENOENT" });
   } finally {
     await rm(projectDir, { recursive: true, force: true });
   }

@@ -28,6 +28,8 @@ npx cursor-direnv uninstall
 npx cursor-direnv uninstall -g
 ```
 
+Local uninstall removes both `.cursor/hooks/pretooluse-direnv.mjs` and `.cursor/rules/direnv-hook.mdc`.
+
 ## What the hook changes
 
 The installed hook rewrites Shell commands from:
