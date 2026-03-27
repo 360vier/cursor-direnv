@@ -93,15 +93,19 @@ test("rewritePayload preserves newlines in multi-line commands (heredoc support)
       isDirenvAvailable: direnvAvailable,
     });
     assert.equal(result.permission, "allow");
-    // The wrapped command must use single-quote escaping so \n sequences remain literal
-    // newline characters (not two-character \n escape sequences that break heredocs).
+    // Single-quote escaping must preserve actual newline characters so heredoc
+    // delimiters appear on their own line when zsh -lc executes the command.
     assert.ok(
       result.updated_input.command.startsWith("direnv exec . zsh -lc '"),
       "command should use single-quote quoting",
     );
     assert.ok(
+      result.updated_input.command.includes("\n"),
+      "wrapped command must contain actual newline characters",
+    );
+    assert.ok(
       !result.updated_input.command.includes("\\n"),
-      "wrapped command must not contain literal \\n - newlines must be preserved",
+      "wrapped command must not contain two-character \\n escape sequences",
     );
   } finally {
     await rm(projectDir, { recursive: true, force: true });

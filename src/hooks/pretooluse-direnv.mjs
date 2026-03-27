@@ -25,6 +25,11 @@ const readStdin = async () => {
 
 const trimStart = (value) => value.replace(/^\s+/, "");
 
+// Shell single-quote escape: wraps str in '…', with any internal ' replaced by '\''.
+// Unlike JSON.stringify, this preserves literal newlines so heredocs in the
+// wrapped command continue to work correctly.
+const shellQuote = (str) => "'" + str.replace(/'/g, "'\\''") + "'";
+
 export const rewritePayload = (
   payload,
   {
@@ -63,9 +68,6 @@ export const rewritePayload = (
     return NO_UPDATE;
   }
 
-  // Shell single-quote escaping preserves literal newlines (unlike JSON.stringify which
-  // collapses them to \n), so heredocs in commit messages and multi-line commands work correctly.
-  const shellQuote = (str) => "'" + str.replace(/'/g, "'\\''") + "'";
   const wrappedCommand = `direnv exec . zsh -lc ${shellQuote(command)}`;
   return {
     permission: "allow",
