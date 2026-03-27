@@ -75,7 +75,33 @@ test("rewritePayload rewrites shell command when .envrc exists", async () => {
     assert.equal(result.permission, "allow");
     assert.equal(
       result.updated_input.command,
-      'direnv exec . zsh -lc "npm run build"',
+      "direnv exec . zsh -lc 'npm run build'",
+    );
+  } finally {
+    await rm(projectDir, { recursive: true, force: true });
+  }
+});
+
+test("rewritePayload preserves newlines in multi-line commands (heredoc support)", async () => {
+  const projectDir = await mkdtemp(join(tmpdir(), "cursor-direnv-hook-"));
+  try {
+    await writeFile(join(projectDir, ".envrc"), "use nix\n", "utf8");
+    const command = "git commit -m \"$(cat <<'EOF'\nAdd feature\n\nDetails here.\n\nEOF\n)\"";
+    const result = rewritePayload(makePayload(command), {
+      env: { CURSOR_PROJECT_DIR: projectDir },
+      cwd: projectDir,
+      isDirenvAvailable: direnvAvailable,
+    });
+    assert.equal(result.permission, "allow");
+    // The wrapped command must use single-quote escaping so \n sequences remain literal
+    // newline characters (not two-character \n escape sequences that break heredocs).
+    assert.ok(
+      result.updated_input.command.startsWith("direnv exec . zsh -lc '"),
+      "command should use single-quote quoting",
+    );
+    assert.ok(
+      !result.updated_input.command.includes("\\n"),
+      "wrapped command must not contain literal \\n - newlines must be preserved",
     );
   } finally {
     await rm(projectDir, { recursive: true, force: true });

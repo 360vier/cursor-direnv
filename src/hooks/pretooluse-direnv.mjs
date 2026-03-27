@@ -63,7 +63,10 @@ export const rewritePayload = (
     return NO_UPDATE;
   }
 
-  const wrappedCommand = `direnv exec . zsh -lc ${JSON.stringify(command)}`;
+  // Shell single-quote escaping preserves literal newlines (unlike JSON.stringify which
+  // collapses them to \n), so heredocs in commit messages and multi-line commands work correctly.
+  const shellQuote = (str) => "'" + str.replace(/'/g, "'\\''") + "'";
+  const wrappedCommand = `direnv exec . zsh -lc ${shellQuote(command)}`;
   return {
     permission: "allow",
     updated_input: {
